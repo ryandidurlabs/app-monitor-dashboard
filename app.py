@@ -181,6 +181,12 @@ def register_routes(app):
         else:
             return jsonify({})
     
+    # Serve static assets (CSS, JS, images)
+    @app.route("/assets/<path:filename>")
+    def serve_assets(filename):
+        """Serve static assets from the template/assets directory."""
+        return send_from_directory("template/assets", filename)
+    
     @app.get("/<string:page>")
     @app.get("/<string:page>.html")
     def page_router(page: str):
