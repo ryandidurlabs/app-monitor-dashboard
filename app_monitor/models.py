@@ -149,7 +149,7 @@ class UserActivity(db.Model):
     location = db.Column(db.String(200))
     success = db.Column(db.Boolean, default=True)
     failure_reason = db.Column(db.String(500))
-    metadata = db.Column(db.JSON)  # Additional activity data
+    activity_metadata = db.Column(db.JSON)  # Additional activity data
     
     # Relationships
     company = db.relationship('Company', backref='user_activities')

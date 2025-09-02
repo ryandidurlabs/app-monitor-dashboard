@@ -263,7 +263,7 @@ def init_database():
                     location=random.choice(["New York", "London", "Tokyo", "Sydney", "Berlin"]),
                     success=random.choice([True, True, True, False]),  # 75% success
                     failure_reason="Invalid credentials" if random.choice([True, False]) else None,
-                    metadata={
+                    activity_metadata={
                         "browser": random.choice(["Chrome", "Firefox", "Safari", "Edge"]),
                         "os": random.choice(["Windows", "macOS", "Linux", "iOS", "Android"])
                     }
