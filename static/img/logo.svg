@@ -1,0 +1,81 @@
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#2d3748;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#4a5568;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Shield Icon -->
+  <g transform="translate(10, 5)">
+    <!-- Shield Background -->
+    <path d="M 20 0 L 35 5 L 35 25 C 35 35 30 40 20 45 L 5 40 C 0 35 0 25 0 15 L 5 5 Z" 
+          fill="url(#shieldGradient)" 
+          stroke="#4a5568" 
+          stroke-width="1.5"
+          filter="url(#glow)"/>
+    
+    <!-- Shield Highlight -->
+    <path d="M 20 0 L 35 5 L 35 25 C 35 35 30 40 20 45 L 5 40 C 0 35 0 25 0 15 L 5 5 Z" 
+          fill="none" 
+          stroke="rgba(255,255,255,0.3)" 
+          stroke-width="2"
+          stroke-dasharray="1,2"/>
+    
+    <!-- Monitoring Dots -->
+    <circle cx="15" cy="15" r="2" fill="#ffffff" opacity="0.9"/>
+    <circle cx="20" cy="20" r="2" fill="#ffffff" opacity="0.9"/>
+    <circle cx="25" cy="15" r="2" fill="#ffffff" opacity="0.9"/>
+    
+    <!-- Connection Lines -->
+    <path d="M 15 15 L 20 20 L 25 15" 
+          stroke="#ffffff" 
+          stroke-width="1.5" 
+          opacity="0.8" 
+          fill="none"/>
+    
+    <!-- Security Lock -->
+    <rect x="17" y="28" width="6" height="8" rx="1" fill="#ffffff" opacity="0.9"/>
+    <circle cx="20" cy="26" r="2" fill="#ffffff" opacity="0.9"/>
+  </g>
+  
+  <!-- App Monitor Text -->
+  <g transform="translate(55, 15)">
+    <!-- App -->
+    <text x="0" y="0" font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" 
+          font-size="18" font-weight="700" fill="url(#textGradient)">
+      App
+    </text>
+    
+    <!-- Monitor -->
+    <text x="0" y="25" font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" 
+          font-size="18" font-weight="700" fill="url(#textGradient)">
+      Monitor
+    </text>
+    
+    <!-- Tagline -->
+    <text x="0" y="40" font-family="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" 
+          font-size="10" font-weight="400" fill="#718096" opacity="0.8">
+      SSO Security Dashboard
+    </text>
+  </g>
+  
+  <!-- Decorative Elements -->
+  <g opacity="0.1">
+    <!-- Background Circles -->
+    <circle cx="180" cy="15" r="8" fill="#667eea"/>
+    <circle cx="190" cy="45" r="6" fill="#764ba2"/>
+    <circle cx="170" cy="50" r="4" fill="#667eea"/>
+  </g>
+</svg>
