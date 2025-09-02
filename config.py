@@ -19,13 +19,17 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """Production configuration."""
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    
+    def __init__(self):
+        # Handle Heroku's DATABASE_URL format immediately
+        database_url = os.environ.get('DATABASE_URL')
+        if database_url and database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        self.SQLALCHEMY_DATABASE_URI = database_url
     
     @classmethod
     def init_app(cls, app):
-        # Handle Heroku's DATABASE_URL format
-        if cls.SQLALCHEMY_DATABASE_URI and cls.SQLALCHEMY_DATABASE_URI.startswith('postgres://'):
-            cls.SQLALCHEMY_DATABASE_URI = cls.SQLALCHEMY_DATABASE_URI.replace('postgres://', 'postgresql://', 1)
+        pass
 
 class TestingConfig(Config):
     """Testing configuration."""
