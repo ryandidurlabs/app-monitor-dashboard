@@ -220,9 +220,11 @@ def register_routes(app):
             return send_from_directory("template", "errors-404.html"), 404
         return "Not Found", 404
 
-# Create the app instance
-app = create_app()
-
+# Create the app instance only when running directly
 if __name__ == "__main__":
+    app = create_app()
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+else:
+    # For WSGI deployment (Heroku), create app without running it
+    app = create_app()
