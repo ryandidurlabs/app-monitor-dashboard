@@ -79,13 +79,17 @@ def register_routes(app):
             return redirect(url_for('index'))
         
         if request.method == 'POST':
-            username = request.form.get('username')
+            email = request.form.get('email')
             password = request.form.get('password')
+            remember = request.form.get('remember') == 'on'
             
-            user = User.query.filter_by(username=username).first()
+            # Try to find user by email first, then by username
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                user = User.query.filter_by(username=email).first()
             
             if user and user.check_password(password) and user.is_active:
-                login_user(user, remember=True)
+                login_user(user, remember=remember)
                 user.last_login = datetime.utcnow()
                 db.session.commit()
                 
@@ -94,9 +98,101 @@ def register_routes(app):
                     next_page = url_for('index')
                 return redirect(next_page)
             else:
-                flash('Invalid username or password', 'error')
+                flash('Invalid email/username or password', 'error')
         
         return send_from_directory("template", "auth-login.html")
+    
+    @app.route("/register", methods=['GET', 'POST'])
+    def register():
+        """User registration page."""
+        if current_user.is_authenticated:
+            return redirect(url_for('index'))
+        
+        if request.method == 'POST':
+            first_name = request.form.get('frist_name')  # Note: template has typo 'frist_name'
+            last_name = request.form.get('last_name')
+            email = request.form.get('email')
+            password = request.form.get('password')
+            password_confirm = request.form.get('password-confirm')
+            agree = request.form.get('agree')
+            
+            # Validation
+            errors = []
+            
+            if not first_name or not last_name:
+                errors.append('First name and last name are required')
+            
+            if not email:
+                errors.append('Email is required')
+            elif User.query.filter_by(email=email).first():
+                errors.append('Email already registered')
+            
+            if not password:
+                errors.append('Password is required')
+            elif len(password) < 6:
+                errors.append('Password must be at least 6 characters')
+            elif password != password_confirm:
+                errors.append('Passwords do not match')
+            
+            if not agree:
+                errors.append('You must agree to the terms and conditions')
+            
+            if errors:
+                for error in errors:
+                    flash(error, 'error')
+            else:
+                # Create new user
+                username = email.split('@')[0]  # Use email prefix as username
+                # Ensure username is unique
+                base_username = username
+                counter = 1
+                while User.query.filter_by(username=username).first():
+                    username = f"{base_username}{counter}"
+                    counter += 1
+                
+                user = User(
+                    username=username,
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name
+                )
+                user.set_password(password)
+                
+                # Create default preferences
+                prefs = UserPreference(user_id=user.id)
+                
+                db.session.add(user)
+                db.session.add(prefs)
+                db.session.commit()
+                
+                flash('Registration successful! Please log in.', 'success')
+                return redirect(url_for('login'))
+        
+        return send_from_directory("template", "auth-register.html")
+    
+    @app.route("/forgot-password", methods=['GET', 'POST'])
+    def forgot_password():
+        """Password reset request page."""
+        if current_user.is_authenticated:
+            return redirect(url_for('index'))
+        
+        if request.method == 'POST':
+            email = request.form.get('email')
+            
+            if not email:
+                flash('Please provide your email address', 'error')
+            else:
+                user = User.query.filter_by(email=email).first()
+                if user:
+                    # In a real app, you would send a password reset email here
+                    flash('If an account with that email exists, a password reset link has been sent.', 'info')
+                else:
+                    # Don't reveal if email exists or not for security
+                    flash('If an account with that email exists, a password reset link has been sent.', 'info')
+                
+                return redirect(url_for('login'))
+        
+        return send_from_directory("template", "auth-forgot-password.html")
     
     @app.route("/logout")
     @login_required
