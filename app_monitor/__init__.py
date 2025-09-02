@@ -33,14 +33,16 @@ def create_app(config_name=None):
     login_manager.login_message = 'Please log in to access this page.'
     login_manager.login_message_category = 'info'
     
-    # Import and register blueprints
+        # Import and register blueprints
     from .blueprints.auth import auth_bp
     from .blueprints.main import main_bp
     from .blueprints.api import api_bp
-    
+    from .blueprints.company import company_bp
+
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(company_bp)
     
     # User loader for Flask-Login
     from .models import User

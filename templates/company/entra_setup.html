@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Entra ID Setup - {{ company.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .setup-step {
+        background: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 5px;
+    }
+    
+    .setup-step h4 {
+        color: #007bff;
+        margin-bottom: 15px;
+    }
+    
+    .code-block {
+        background: #2d3748;
+        color: #e2e8f0;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: 'Courier New', monospace;
+        margin: 10px 0;
+        overflow-x: auto;
+    }
+    
+    .permission-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+    
+    .permission-table th,
+    .permission-table td {
+        border: 1px solid #dee2e6;
+        padding: 12px;
+        text-align: left;
+    }
+    
+    .permission-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+    }
+    
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-active { background: #d4edda; color: #155724; }
+    .status-error { background: #f8d7da; color: #721c24; }
+    
+    .test-connection-btn {
+        background: #28a745;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 10px 0;
+    }
+    
+    .test-connection-btn:hover {
+        background: #218838;
+    }
+    
+    .sync-btn {
+        background: #007bff;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 10px 0;
+    }
+    
+    .sync-btn:hover {
+        background: #0056b3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-cog"></i> Microsoft Entra ID Setup</h4>
+                    <p class="text-muted">Complete the configuration to start monitoring your SSO applications</p>
+                </div>
+                <div class="card-body">
+                    <!-- Setup Progress -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="status-badge status-active">✓ Company Setup</div>
+                                <p class="mt-2">Company profile created</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="status-badge status-pending">⏳ Entra ID Config</div>
+                                <p class="mt-2">Configure application</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="status-badge status-pending">⏳ Permissions</div>
+                                <p class="mt-2">Grant API permissions</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="status-badge status-pending">⏳ Sync Data</div>
+                                <p class="mt-2">Discover applications</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: App Registration -->
+                    <div class="setup-step">
+                        <h4><i class="fas fa-1"></i> Register Application in Microsoft Entra ID</h4>
+                        <p>First, you need to register this application in your Microsoft Entra ID (Azure AD) tenant.</p>
+                        
+                        <ol>
+                            <li>Go to <a href="https://portal.azure.com" target="_blank">Azure Portal</a></li>
+                            <li>Navigate to <strong>Microsoft Entra ID</strong> → <strong>App registrations</strong></li>
+                            <li>Click <strong>New registration</strong></li>
+                            <li>Enter the following details:
+                                <ul>
+                                    <li><strong>Name:</strong> {{ company.name }} SSO Monitor</li>
+                                    <li><strong>Supported account types:</strong> Accounts in this organizational directory only</li>
+                                    <li><strong>Redirect URI:</strong> Web - <code>{{ request.url_root }}auth/entra-callback</code></li>
+                                </ul>
+                            </li>
+                            <li>Click <strong>Register</strong></li>
+                        </ol>
+                        
+                        <div class="alert alert-info">
+                            <strong>Note:</strong> Save the <strong>Application (client) ID</strong> and <strong>Directory (tenant) ID</strong> - you'll need these in the next step.
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Configure Authentication -->
+                    <div class="setup-step">
+                        <h4><i class="fas fa-2"></i> Configure Authentication & API Permissions</h4>
+                        <p>Configure the application to use client credentials flow and grant necessary permissions.</p>
+                        
+                        <h5>2.1 Configure Authentication</h5>
+                        <ol>
+                            <li>In your app registration, go to <strong>Authentication</strong></li>
+                            <li>Under <strong>Platform configurations</strong>, click <strong>Add a platform</strong></li>
+                            <li>Select <strong>Web</strong></li>
+                            <li>Check <strong>Access tokens</strong> and <strong>ID tokens</strong></li>
+                            <li>Click <strong>Configure</strong></li>
+                        </ol>
+                        
+                        <h5>2.2 Grant API Permissions</h5>
+                        <ol>
+                            <li>Go to <strong>API permissions</strong></li>
+                            <li>Click <strong>Add a permission</strong></li>
+                            <li>Select <strong>Microsoft Graph</strong></li>
+                            <li>Choose <strong>Application permissions</strong></li>
+                            <li>Add the following permissions:</li>
+                        </ol>
+                        
+                        <table class="permission-table">
+                            <thead>
+                                <tr>
+                                    <th>Permission</th>
+                                    <th>Description</th>
+                                    <th>Required For</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>Application.Read.All</code></td>
+                                    <td>Read all applications</td>
+                                    <td>Discovering SSO applications</td>
+                                </tr>
+                                <tr>
+                                    <td><code>User.Read.All</code></td>
+                                    <td>Read all users</td>
+                                    <td>User management and activity</td>
+                                </tr>
+                                <tr>
+                                    <td><code>AuditLog.Read.All</code></td>
+                                    <td>Read sign-in logs</td>
+                                    <td>Monitoring user activity</td>
+                                </tr>
+                                <tr>
+                                    <td><code>Directory.Read.All</code></td>
+                                    <td>Read directory data</td>
+                                    <td>Organization information</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="alert alert-warning">
+                            <strong>Important:</strong> After adding permissions, click <strong>Grant admin consent</strong> to approve them for your organization.
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Create Client Secret -->
+                    <div class="setup-step">
+                        <h4><i class="fas fa-3"></i> Create Client Secret</h4>
+                        <p>Create a client secret for the application to authenticate API calls.</p>
+                        
+                        <ol>
+                            <li>Go to <strong>Certificates & secrets</strong></li>
+                            <li>Under <strong>Client secrets</strong>, click <strong>New client secret</strong></li>
+                            <li>Enter a description (e.g., "SSO Monitor API Key")</li>
+                            <li>Choose expiration (recommend 24 months)</li>
+                            <li>Click <strong>Add</strong></li>
+                            <li><strong>Copy the secret value immediately</strong> - you won't be able to see it again!</li>
+                        </ol>
+                        
+                        <div class="alert alert-danger">
+                            <strong>Security Warning:</strong> Store the client secret securely. It will only be shown once.
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Test Connection -->
+                    <div class="setup-step">
+                        <h4><i class="fas fa-4"></i> Test Connection</h4>
+                        <p>Test the connection to ensure everything is configured correctly.</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Current Configuration</h5>
+                                <p><strong>Company:</strong> {{ company.name }}</p>
+                                <p><strong>Domain:</strong> {{ company.domain }}</p>
+                                <p><strong>Status:</strong> 
+                                    <span class="status-badge status-pending">Pending</span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Test Connection</h5>
+                                <button class="test-connection-btn" onclick="testConnection()">
+                                    <i class="fas fa-plug"></i> Test Connection
+                                </button>
+                                <div id="connection-result" class="mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Sync Applications -->
+                    <div class="setup-step">
+                        <h4><i class="fas fa-5"></i> Sync Applications</h4>
+                        <p>Once the connection is successful, sync to discover your SSO applications.</p>
+                        
+                        <button class="sync-btn" onclick="syncApplications()" id="sync-btn" disabled>
+                            <i class="fas fa-sync"></i> Sync Applications
+                        </button>
+                        
+                        <div id="sync-result" class="mt-2"></div>
+                        
+                        <div class="alert alert-info">
+                            <strong>What happens during sync:</strong>
+                            <ul>
+                                <li>Discovers all applications in your Entra ID tenant</li>
+                                <li>Identifies SSO-enabled applications</li>
+                                <li>Creates application records in the monitoring system</li>
+                                <li>Sets up activity monitoring for each application</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Next Steps -->
+                    <div class="setup-step">
+                        <h4><i class="fas fa-arrow-right"></i> Next Steps</h4>
+                        <p>After completing the setup:</p>
+                        <ul>
+                            <li>Monitor user activity across your SSO applications</li>
+                            <li>Set up alerts for suspicious login attempts</li>
+                            <li>Generate reports on application usage</li>
+                            <li>Manage user access and permissions</li>
+                        </ul>
+                        
+                        <a href="{{ url_for('company.company_dashboard') }}" class="btn btn-primary">
+                            <i class="fas fa-tachometer-alt"></i> Go to Company Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function testConnection() {
+    const btn = document.querySelector('.test-connection-btn');
+    const resultDiv = document.getElementById('connection-result');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
+    
+    // Simulate connection test (replace with actual API call)
+    setTimeout(() => {
+        const success = Math.random() > 0.3; // 70% success rate for demo
+        
+        if (success) {
+            resultDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check"></i> Connection successful! Entra ID integration is working.</div>';
+            document.getElementById('sync-btn').disabled = false;
+        } else {
+            resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-times"></i> Connection failed. Please check your configuration.</div>';
+        }
+        
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-plug"></i> Test Connection';
+    }, 2000);
+}
+
+function syncApplications() {
+    const btn = document.getElementById('sync-btn');
+    const resultDiv = document.getElementById('sync-result');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+    
+    // Simulate sync process (replace with actual API call)
+    setTimeout(() => {
+        const appCount = Math.floor(Math.random() * 20) + 5; // 5-25 apps
+        
+        resultDiv.innerHTML = `
+            <div class="alert alert-success">
+                <i class="fas fa-check"></i> Sync completed successfully! 
+                Discovered ${appCount} applications from Entra ID.
+            </div>
+        `;
+        
+        btn.innerHTML = '<i class="fas fa-sync"></i> Sync Again';
+        btn.disabled = false;
+        
+        // Update status badge
+        const statusBadge = document.querySelector('.status-badge:nth-child(3)');
+        statusBadge.className = 'status-badge status-active';
+        statusBadge.innerHTML = '✓ Sync Complete';
+    }, 3000);
+}
+</script>
+{% endblock %}

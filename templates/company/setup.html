@@ -1,0 +1,442 @@
+{% extends "base.html" %}
+
+{% block title %}Company Setup - SSO Monitor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .setup-wizard {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .step-indicator {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+        position: relative;
+    }
+    
+    .step-indicator::before {
+        content: '';
+        position: absolute;
+        top: 15px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #e9ecef;
+        z-index: 1;
+    }
+    
+    .step {
+        position: relative;
+        z-index: 2;
+        background: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: #6c757d;
+    }
+    
+    .step.active {
+        border-color: #007bff;
+        background: #007bff;
+        color: white;
+    }
+    
+    .step.completed {
+        border-color: #28a745;
+        background: #28a745;
+        color: white;
+    }
+    
+    .form-section {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #007bff;
+    }
+    
+    .form-section h4 {
+        color: #007bff;
+        margin-bottom: 20px;
+    }
+    
+    .required-field::after {
+        content: ' *';
+        color: #dc3545;
+    }
+    
+    .help-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+    
+    .entra-config {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 15px 0;
+    }
+    
+    .entra-config h5 {
+        color: #856404;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="setup-wizard">
+                <div class="card">
+                    <div class="card-header text-center">
+                        <h3><i class="fas fa-building"></i> Company Setup Wizard</h3>
+                        <p class="text-muted">Set up your organization for SSO monitoring</p>
+                    </div>
+                    <div class="card-body">
+                        <!-- Step Indicator -->
+                        <div class="step-indicator">
+                            <div class="step active">1</div>
+                            <div class="step">2</div>
+                            <div class="step">3</div>
+                        </div>
+
+                        <form method="POST" id="company-setup-form">
+                            <!-- Step 1: Company Information -->
+                            <div class="form-section" id="step-1">
+                                <h4><i class="fas fa-info-circle"></i> Company Information</h4>
+                                <p class="text-muted mb-3">Tell us about your organization</p>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_name" class="required-field">Company Name</label>
+                                            <input type="text" class="form-control" id="company_name" name="company_name" 
+                                                   required placeholder="Enter company name">
+                                            <div class="help-text">The official name of your organization</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="company_domain" class="required-field">Company Domain</label>
+                                            <input type="text" class="form-control" id="company_domain" name="company_domain" 
+                                                   required placeholder="example.com">
+                                            <div class="help-text">Your organization's primary domain (without http://)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="industry">Industry</label>
+                                            <select class="form-control" id="industry" name="industry">
+                                                <option value="">Select Industry</option>
+                                                <option value="technology">Technology</option>
+                                                <option value="healthcare">Healthcare</option>
+                                                <option value="finance">Finance</option>
+                                                <option value="education">Education</option>
+                                                <option value="government">Government</option>
+                                                <option value="retail">Retail</option>
+                                                <option value="manufacturing">Manufacturing</option>
+                                                <option value="consulting">Consulting</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="employee_count">Employee Count</label>
+                                            <select class="form-control" id="employee_count" name="employee_count">
+                                                <option value="">Select Range</option>
+                                                <option value="1-10">1-10 employees</option>
+                                                <option value="11-50">11-50 employees</option>
+                                                <option value="51-200">51-200 employees</option>
+                                                <option value="201-500">201-500 employees</option>
+                                                <option value="501-1000">501-1000 employees</option>
+                                                <option value="1001-5000">1001-5000 employees</option>
+                                                <option value="5001+">5001+ employees</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-right">
+                                    <button type="button" class="btn btn-primary" onclick="nextStep()">
+                                        Next <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: SSO Provider Selection -->
+                            <div class="form-section" id="step-2" style="display: none;">
+                                <h4><i class="fas fa-shield-alt"></i> SSO Provider Configuration</h4>
+                                <p class="text-muted mb-3">Choose your primary SSO provider</p>
+                                
+                                <div class="form-group">
+                                    <label>Primary SSO Provider</label>
+                                    <div class="custom-control custom-radio">
+                                        <input type="radio" id="entra_id" name="sso_provider" value="entra_id" 
+                                               class="custom-control-input" checked>
+                                        <label class="custom-control-label" for="entra_id">
+                                            <strong>Microsoft Entra ID (Azure AD)</strong>
+                                        </label>
+                                    </div>
+                                    <div class="help-text">Recommended for organizations using Microsoft 365</div>
+                                </div>
+                                
+                                <div class="entra-config">
+                                    <h5><i class="fas fa-info-circle"></i> About Microsoft Entra ID</h5>
+                                    <p>Microsoft Entra ID (formerly Azure AD) provides:</p>
+                                    <ul>
+                                        <li>Single sign-on to cloud and on-premises applications</li>
+                                        <li>Multi-factor authentication</li>
+                                        <li>Conditional access policies</li>
+                                        <li>Comprehensive audit logging</li>
+                                        <li>Integration with Microsoft 365 and other services</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="text-right">
+                                    <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                                        <i class="fas fa-arrow-left"></i> Previous
+                                    </button>
+                                    <button type="button" class="btn btn-primary" onclick="nextStep()">
+                                        Next <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Step 3: Entra ID Configuration -->
+                            <div class="form-section" id="step-3" style="display: none;">
+                                <h4><i class="fas fa-cog"></i> Microsoft Entra ID Configuration</h4>
+                                <p class="text-muted mb-3">Enter your Entra ID application details</p>
+                                
+                                <div class="alert alert-info">
+                                    <i class="fas fa-lightbulb"></i>
+                                    <strong>Need help?</strong> 
+                                    <a href="#" onclick="showSetupHelp()">View detailed setup instructions</a> 
+                                    or contact your Azure administrator.
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="tenant_id" class="required-field">Tenant ID</label>
+                                            <input type="text" class="form-control" id="tenant_id" name="tenant_id" 
+                                                   required placeholder="12345678-1234-1234-1234-123456789012">
+                                            <div class="help-text">Your Azure AD tenant ID (Directory ID)</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="client_id" class="required-field">Client ID</label>
+                                            <input type="text" class="form-control" id="client_id" name="client_id" 
+                                                   required placeholder="87654321-4321-4321-4321-210987654321">
+                                            <div class="help-text">Your registered application's Client ID</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="client_secret" class="required-field">Client Secret</label>
+                                            <input type="password" class="form-control" id="client_secret" name="client_secret" 
+                                                   required placeholder="Enter client secret">
+                                            <div class="help-text">The client secret from your app registration</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="api_key" class="required-field">API Key</label>
+                                            <input type="password" class="form-control" id="api_key" name="api_key" 
+                                                   required placeholder="Enter API key">
+                                            <div class="help-text">Additional API key for enhanced security</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" id="confirm_setup" required>
+                                        <label class="custom-control-label" for="confirm_setup">
+                                            I confirm that I have completed the Microsoft Entra ID application registration 
+                                            and granted the necessary permissions as outlined in the setup instructions.
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-right">
+                                    <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                                        <i class="fas fa-arrow-left"></i> Previous
+                                    </button>
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-check"></i> Complete Setup
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Setup Help Modal -->
+<div class="modal fade" id="setupHelpModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Microsoft Entra ID Setup Instructions</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <strong>Prerequisites:</strong> You need Global Administrator or Application Administrator permissions in your Azure AD tenant.
+                </div>
+                
+                <h6>Step 1: Register Application</h6>
+                <ol>
+                    <li>Go to <a href="https://portal.azure.com" target="_blank">Azure Portal</a></li>
+                    <li>Navigate to <strong>Microsoft Entra ID</strong> → <strong>App registrations</strong></li>
+                    <li>Click <strong>New registration</strong></li>
+                    <li>Enter application details and click <strong>Register</strong></li>
+                </ol>
+                
+                <h6>Step 2: Configure API Permissions</h6>
+                <ol>
+                    <li>Go to <strong>API permissions</strong></li>
+                    <li>Add <strong>Microsoft Graph</strong> permissions:</li>
+                    <ul>
+                        <li><code>Application.Read.All</code></li>
+                        <li><code>User.Read.All</code></li>
+                        <li><code>AuditLog.Read.All</code></li>
+                        <li><code>Directory.Read.All</code></li>
+                    </ul>
+                    <li>Click <strong>Grant admin consent</strong></li>
+                </ol>
+                
+                <h6>Step 3: Create Client Secret</h6>
+                <ol>
+                    <li>Go to <strong>Certificates & secrets</strong></li>
+                    <li>Click <strong>New client secret</strong></li>
+                    <li>Copy the secret value immediately</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentStep = 1;
+const totalSteps = 3;
+
+function nextStep() {
+    if (currentStep < totalSteps) {
+        // Validate current step
+        if (!validateCurrentStep()) {
+            return;
+        }
+        
+        // Hide current step
+        document.getElementById(`step-${currentStep}`).style.display = 'none';
+        
+        // Show next step
+        currentStep++;
+        document.getElementById(`step-${currentStep}`).style.display = 'block';
+        
+        // Update step indicator
+        updateStepIndicator();
+    }
+}
+
+function prevStep() {
+    if (currentStep > 1) {
+        // Hide current step
+        document.getElementById(`step-${currentStep}`).style.display = 'none';
+        
+        // Show previous step
+        currentStep--;
+        document.getElementById(`step-${currentStep}`).style.display = 'block';
+        
+        // Update step indicator
+        updateStepIndicator();
+    }
+}
+
+function updateStepIndicator() {
+    const steps = document.querySelectorAll('.step');
+    steps.forEach((step, index) => {
+        step.className = 'step';
+        if (index + 1 < currentStep) {
+            step.classList.add('completed');
+        } else if (index + 1 === currentStep) {
+            step.classList.add('active');
+        }
+    });
+}
+
+function validateCurrentStep() {
+    const currentStepElement = document.getElementById(`step-${currentStep}`);
+    const requiredFields = currentStepElement.querySelectorAll('[required]');
+    
+    let isValid = true;
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            field.classList.remove('is-invalid');
+        }
+    });
+    
+    if (!isValid) {
+        alert('Please fill in all required fields before proceeding.');
+    }
+    
+    return isValid;
+}
+
+function showSetupHelp() {
+    $('#setupHelpModal').modal('show');
+}
+
+// Form submission
+document.getElementById('company-setup-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Final validation
+    if (!validateCurrentStep()) {
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Setting up...';
+    
+    // Submit form
+    this.submit();
+});
+</script>
+{% endblock %}

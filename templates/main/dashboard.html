@@ -1,257 +1,409 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - App Monitor{% endblock %}
+{% block title %}Dashboard - {{ current_user.get_full_name() }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .company-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .sso-status {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    
+    .status-active { background: #28a745; }
+    .status-pending { background: #ffc107; }
+    .status-error { background: #dc3545; }
+    
+    .quick-actions {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .action-card {
+        text-align: center;
+        padding: 15px;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+    
+    .action-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .action-card i {
+        font-size: 2rem;
+        color: #007bff;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="main-wrapper main-wrapper-1">
-  <div class="navbar-bg"></div>
-  <nav class="navbar navbar-expand-lg main-navbar sticky">
-    <div class="form-inline mr-auto">
-      <ul class="navbar-nav mr-3">
-        <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg collapse-btn"> <i data-feather="align-justify"></i></a></li>
-        <li><a href="#" class="nav-link nav-link-lg fullscreen-btn">
-            <i data-feather="maximize"></i>
-          </a></li>
-        <li>
-          <form class="form-inline mr-auto">
-            <div class="search-element">
-              <input class="form-control" type="search" placeholder="Search" aria-label="Search" data-width="200">
-              <button class="btn" type="submit">
-                <i class="fas fa-search"></i>
-              </button>
+<div class="container-fluid">
+    <!-- Company Information Header -->
+    {% if current_user.company %}
+    <div class="company-info">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2><i class="fas fa-building"></i> {{ current_user.company.name }}</h2>
+                <p class="mb-0">
+                    <i class="fas fa-globe"></i> {{ current_user.company.domain }} | 
+                    <i class="fas fa-industry"></i> {{ current_user.company.industry|title }} | 
+                    <i class="fas fa-users"></i> {{ current_user.company.employee_count }} employees
+                </p>
             </div>
-          </form>
-        </li>
-      </ul>
+            <div class="col-md-4 text-right">
+                <span class="badge badge-light badge-lg">
+                    <i class="fas fa-user-shield"></i> {{ current_user.role|title }}
+                </span>
+            </div>
+        </div>
     </div>
-    <ul class="navbar-nav navbar-right">
-      <li class="dropdown dropdown-list-toggle"><a href="#" data-toggle="dropdown"
-          class="nav-link notification-toggle nav-link-lg"><i data-feather="bell" class="bell"></i>
-        </a>
-        <div class="dropdown-menu dropdown-list dropdown-menu-right pullDown">
-          <div class="dropdown-header">
-            Notifications
-            <div class="float-right">
-              <a href="#">Mark All As Read</a>
-            </div>
-          </div>
-          <div class="dropdown-list-content dropdown-list-icons">
-            <a href="#" class="dropdown-item dropdown-item-unread"> <span
-                class="dropdown-item-icon bg-primary text-white"> <i class="fas fa-code"></i>
-              </span> <span class="dropdown-item-desc"> System update available
-                <span class="time">2 Min Ago</span>
-              </span>
-            </a>
-          </div>
-          <div class="dropdown-footer text-center">
-            <a href="#">View All <i class="fas fa-chevron-right"></i></a>
-          </div>
-        </div>
-      </li>
-      <li class="dropdown"><a href="#" data-toggle="dropdown"
-          class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image" src="{{ url_for('static', filename='img/user.png') }}"
-            class="user-img-radious-style"> <span class="d-sm-none d-lg-inline-block">{{ current_user.get_full_name() }}</span></a>
-        <div class="dropdown-menu dropdown-menu-right pullDown">
-          <div class="dropdown-title">Hello {{ current_user.first_name }}</div>
-          <a href="{{ url_for('main.profile') }}" class="dropdown-item has-icon"> <i class="far fa-user"></i> Profile
-          </a> <a href="#" class="dropdown-item has-icon"> <i class="fas fa-cog"></i>
-            Settings
-          </a>
-          <div class="dropdown-divider"></div>
-          <a href="{{ url_for('auth.logout') }}" class="dropdown-item has-icon text-danger"> <i class="fas fa-sign-out-alt"></i>
-            Logout
-          </a>
-        </div>
-      </li>
-    </ul>
-  </nav>
-  
-  <div class="main-sidebar sidebar-style-2">
-    <aside id="sidebar-wrapper">
-      <div class="sidebar-brand">
-        <a href="{{ url_for('main.dashboard') }}"> <img alt="image" src="{{ url_for('static', filename='img/logo.png') }}" class="header-logo" /> <span
-            class="logo-name">App Monitor</span>
-        </a>
-      </div>
-      <ul class="sidebar-menu">
-        <li class="menu-header">Main</li>
-        <li class="dropdown active">
-          <a href="{{ url_for('main.dashboard') }}" class="nav-link"><i data-feather="monitor"></i><span>Dashboard</span></a>
-        </li>
-        <li class="dropdown">
-          <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="pie-chart"></i><span>Metrics</span></a>
-          <ul class="dropdown-menu">
-            <li><a class="nav-link" href="#">Performance</a></li>
-            <li><a class="nav-link" href="#">System Health</a></li>
-          </ul>
-        </li>
-        <li class="dropdown">
-          <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="activity"></i><span>Events</span></a>
-          <ul class="dropdown-menu">
-            <li><a class="nav-link" href="#">System Events</a></li>
-            <li><a class="nav-link" href="#">User Activity</a></li>
-          </ul>
-        </li>
-        <li><a class="nav-link" href="{{ url_for('main.profile') }}"><i data-feather="user"></i><span>Profile</span></a></li>
-      </ul>
-    </aside>
-  </div>
-  
-  <!-- Main Content -->
-  <div class="main-content">
-    <section class="section">
-      <div class="row">
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
-          <div class="card">
-            <div class="card-statistic-4">
-              <div class="align-items-center justify-content-between">
-                <div class="row">
-                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                    <div class="card-content">
-                      <h5 class="font-15">Active Users</h5>
-                      <h2 class="mb-3 font-18">{{ recent_metrics|length if recent_metrics else 0 }}</h2>
-                      <p class="mb-0"><span class="col-green">Active</span> Monitoring</p>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
-                    <div class="banner-img">
-                      <img src="{{ url_for('static', filename='img/banner/1.png') }}" alt="">
-                    </div>
-                  </div>
+    {% endif %}
+
+    <!-- SSO Status Overview -->
+    {% if current_user.company %}
+    <div class="sso-status">
+        <h5><i class="fas fa-shield-alt"></i> SSO Configuration Status</h5>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="status-indicator status-active"></div>
+                    <strong>Microsoft Entra ID</strong>
+                    <p class="text-muted mb-0">Active</p>
                 </div>
-              </div>
             </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
-          <div class="card">
-            <div class="card-statistic-4">
-              <div class="align-items-center justify-content-between">
-                <div class="row">
-                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                    <div class="card-content">
-                      <h5 class="font-15">System Events</h5>
-                      <h2 class="mb-3 font-18">{{ recent_events|length if recent_events else 0 }}</h2>
-                      <p class="mb-0"><span class="col-orange">Recent</span> Activity</p>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
-                    <div class="banner-img">
-                      <img src="{{ url_for('static', filename='img/banner/2.png') }}" alt="">
-                    </div>
-                  </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="status-indicator status-active"></div>
+                    <strong>Applications</strong>
+                    <p class="text-muted mb-0">{{ sso_apps|length if sso_apps else 0 }} discovered</p>
                 </div>
-              </div>
             </div>
-          </div>
-        </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
-          <div class="card">
-            <div class="card-statistic-4">
-              <div class="align-items-center justify-content-between">
-                <div class="row">
-                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                    <div class="card-content">
-                      <h5 class="font-15">Uptime</h5>
-                      <h2 class="mb-3 font-18">99.9%</h2>
-                      <p class="mb-0"><span class="col-green">High</span> Availability</p>
-                    </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
-                    <div class="banner-img">
-                      <img src="{{ url_for('static', filename='img/banner/3.png') }}" alt="">
-                    </div>
-                  </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="status-indicator status-active"></div>
+                    <strong>Last Sync</strong>
+                    <p class="text-muted mb-0">2 hours ago</p>
                 </div>
-              </div>
             </div>
-          </div>
+            <div class="col-md-3">
+                <div class="text-center">
+                    <div class="status-indicator status-active"></div>
+                    <strong>Monitoring</strong>
+                    <p class="text-muted mb-0">Active</p>
+                </div>
+            </div>
         </div>
-        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
-          <div class="card">
-            <div class="card-statistic-4">
-              <div class="align-items-center justify-content-between">
-                <div class="row">
-                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
-                    <div class="card-content">
-                      <h5 class="font-15">Response Time</h5>
-                      <h2 class="mb-3 font-18">45ms</h2>
-                      <p class="mb-0"><span class="col-green">Fast</span> Performance</p>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="action-card">
+                    <i class="fas fa-sync"></i>
+                    <h6>Sync Applications</h6>
+                    <p class="text-muted">Update from Entra ID</p>
+                    <button class="btn btn-sm btn-primary" onclick="syncApplications()">
+                        <i class="fas fa-sync"></i> Sync Now
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="action-card">
+                    <i class="fas fa-chart-line"></i>
+                    <h6>View Reports</h6>
+                    <p class="text-muted">Activity analytics</p>
+                    <a href="#" class="btn btn-sm btn-info">
+                        <i class="fas fa-chart-line"></i> View
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="action-card">
+                    <i class="fas fa-users"></i>
+                    <h6>Manage Users</h6>
+                    <p class="text-muted">User administration</p>
+                    <a href="{{ url_for('company.company_users') }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-users"></i> Manage
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="action-card">
+                    <i class="fas fa-cog"></i>
+                    <h6>Settings</h6>
+                    <p class="text-muted">Configuration</p>
+                    <a href="{{ url_for('company.entra_setup') }}" class="btn btn-sm btn-secondary">
+                        <i class="fas fa-cog"></i> Configure
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Activity -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-history"></i> Recent User Activity</h4>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Application</th>
+                                    <th>Activity</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in recent_activities %}
+                                <tr>
+                                    <td>
+                                        <i class="fas fa-user"></i>
+                                        {{ activity.user.get_full_name() }}
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-app"></i>
+                                        {{ activity.app.name }}
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ 'success' if activity.success else 'danger' }}">
+                                            {{ activity.activity_type|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        {% if activity.success %}
+                                        <i class="fas fa-check text-success"></i>
+                                        {% else %}
+                                        <i class="fas fa-times text-danger"></i>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                  </div>
-                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
-                    <div class="banner-img">
-                      <img src="{{ url_for('static', filename='img/banner/4.png') }}" alt="">
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-info-circle fa-3x mb-3"></i>
+                        <p>No recent activity to display.</p>
+                        <p>Activity will appear here once users start accessing SSO applications.</p>
                     </div>
-                  </div>
+                    {% endif %}
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
-      
-      <div class="row">
-        <div class="col-12 col-sm-12 col-lg-8">
-          <div class="card">
-            <div class="card-header">
-              <h4>Recent Metrics</h4>
-            </div>
-            <div class="card-body">
-              {% if recent_metrics %}
-                <div class="table-responsive">
-                  <table class="table table-striped">
-                    <thead>
-                      <tr>
-                        <th>Type</th>
-                        <th>Value</th>
-                        <th>Description</th>
-                        <th>Timestamp</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for metric in recent_metrics %}
-                      <tr>
-                        <td><span class="badge badge-primary">{{ metric.metric_type }}</span></td>
-                        <td>{{ metric.value }}{% if metric.unit %} {{ metric.unit }}{% endif %}</td>
-                        <td>{{ metric.description or 'No description' }}</td>
-                        <td>{{ metric.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
-                      </tr>
-                      {% endfor %}
-                    </tbody>
-                  </table>
+
+        <!-- SSO Applications -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-th"></i> SSO Applications</h4>
                 </div>
-              {% else %}
-                <p class="text-muted text-center">No metrics available yet.</p>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-        <div class="col-12 col-sm-12 col-lg-4">
-          <div class="card">
-            <div class="card-header">
-              <h4>Recent Events</h4>
-            </div>
-            <div class="card-body">
-              {% if recent_events %}
-                {% for event in recent_events %}
-                <div class="support-ticket media pb-1 mb-3">
-                  <div class="media-body ml-3">
-                    <div class="badge badge-pill badge-{{ 'danger' if event.severity == 'high' else 'warning' if event.severity == 'medium' else 'info' }} mb-1 float-right">{{ event.severity|title }}</div>
-                    <span class="font-weight-bold">{{ event.event_type|title }}</span>
-                    <p class="my-1">{{ event.message }}</p>
-                    <small class="text-muted">{{ event.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
-                  </div>
+                <div class="card-body">
+                    {% if sso_apps %}
+                    <div class="list-group list-group-flush">
+                        {% for app in sso_apps[:10] %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ app.name }}</h6>
+                                <small class="text-muted">{{ app.app_type|title }}</small>
+                            </div>
+                            <span class="badge badge-{{ 'success' if app.is_active else 'secondary' }} badge-pill">
+                                {{ 'Active' if app.is_active else 'Inactive' }}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if sso_apps|length > 10 %}
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('company.sso_applications') }}" class="btn btn-sm btn-outline-primary">
+                            View All {{ sso_apps|length }} Applications
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-th fa-3x mb-3"></i>
+                        <p>No SSO applications discovered yet.</p>
+                        <button class="btn btn-primary" onclick="syncApplications()">
+                            <i class="fas fa-sync"></i> Discover Applications
+                        </button>
+                    </div>
+                    {% endif %}
                 </div>
-                {% endfor %}
-              {% else %}
-                <p class="text-muted text-center">No events available yet.</p>
-              {% endif %}
             </div>
-          </div>
         </div>
-      </div>
-    </section>
-  </div>
+    </div>
+
+    <!-- System Metrics -->
+    <div class="row mt-4">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-chart-bar"></i> System Metrics</h4>
+                </div>
+                <div class="card-body">
+                    {% if metrics %}
+                    <div class="row">
+                        {% for metric in metrics[:4] %}
+                        <div class="col-6 mb-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ "%.1f"|format(metric.value) }}{{ metric.unit }}</h3>
+                                <p class="text-muted mb-0">{{ metric.metric_type|replace('_', ' ')|title }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                        <p>No metrics available yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Recent System Events</h4>
+                </div>
+                <div class="card-body">
+                    {% if events %}
+                    <div class="list-group list-group-flush">
+                        {% for event in events[:5] %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ event.message }}</h6>
+                                    <small class="text-muted">{{ event.source|title }}</small>
+                                </div>
+                                <span class="badge badge-{{ 'success' if event.severity == 'low' else 'warning' if event.severity == 'medium' else 'danger' }}">
+                                    {{ event.severity|title }}
+                                </span>
+                            </div>
+                            <small class="text-muted">
+                                {{ event.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                            </small>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                        <p>No system events to display.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function syncApplications() {
+    // Show loading state
+    const syncBtn = event.target;
+    const originalText = syncBtn.innerHTML;
+    syncBtn.disabled = true;
+    syncBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+    
+    // Make API call to sync applications
+    fetch('/company/sync-entra', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showAlert('success', data.message);
+            // Reload page after a short delay to show updated data
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            showAlert('error', data.error || 'Sync failed');
+        }
+    })
+    .catch(error => {
+        showAlert('error', 'Network error occurred');
+        console.error('Error:', error);
+    })
+    .finally(() => {
+        // Reset button state
+        syncBtn.disabled = false;
+        syncBtn.innerHTML = originalText;
+    });
+}
+
+function showAlert(type, message) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    `;
+    
+    // Insert alert at the top of the container
+    const container = document.querySelector('.container-fluid');
+    container.insertAdjacentHTML('afterbegin', alertHtml);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) {
+            alert.remove();
+        }
+    }, 5000);
+}
+</script>
 {% endblock %}

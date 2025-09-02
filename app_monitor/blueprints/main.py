@@ -23,23 +23,35 @@ def index():
 @login_required
 def dashboard():
     """User dashboard page."""
-    # Get user's recent metrics
-    recent_metrics = AppMetric.query.filter_by(user_id=current_user.id)\
-        .order_by(AppMetric.timestamp.desc())\
-        .limit(5).all()
+    # Get user's company and related data
+    company = None
+    sso_apps = []
+    recent_activities = []
     
-    # Get recent system events
-    recent_events = SystemEvent.query\
-        .order_by(SystemEvent.timestamp.desc())\
-        .limit(5).all()
+    if hasattr(current_user, 'company') and current_user.company:
+        company = current_user.company
+        
+        # Get SSO applications for the company
+        from ..models import SSOApplication
+        sso_apps = SSOApplication.query.filter_by(company_id=company.id).all()
+        
+        # Get recent user activities
+        from ..models import UserActivity
+        recent_activities = UserActivity.query.filter_by(company_id=company.id)\
+            .order_by(UserActivity.timestamp.desc()).limit(20).all()
     
-    # Get user preferences
-    preferences = UserPreference.query.filter_by(user_id=current_user.id).first()
+    # Get recent metrics and events for the user
+    metrics = AppMetric.query.filter_by(user_id=current_user.id)\
+        .order_by(AppMetric.timestamp.desc()).limit(8).all()
     
-    return render_template('main/dashboard.html',
-                         recent_metrics=recent_metrics,
-                         recent_events=recent_events,
-                         preferences=preferences)
+    events = SystemEvent.query.order_by(SystemEvent.timestamp.desc()).limit(10).all()
+    
+    return render_template('main/dashboard.html', 
+                         company=company,
+                         sso_apps=sso_apps,
+                         recent_activities=recent_activities,
+                         metrics=metrics,
+                         events=events)
 
 @main_bp.route('/profile')
 @login_required
