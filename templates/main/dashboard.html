@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - App Monitor{% endblock %}
+
+{% block content %}
+<div class="main-wrapper main-wrapper-1">
+  <div class="navbar-bg"></div>
+  <nav class="navbar navbar-expand-lg main-navbar sticky">
+    <div class="form-inline mr-auto">
+      <ul class="navbar-nav mr-3">
+        <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg collapse-btn"> <i data-feather="align-justify"></i></a></li>
+        <li><a href="#" class="nav-link nav-link-lg fullscreen-btn">
+            <i data-feather="maximize"></i>
+          </a></li>
+        <li>
+          <form class="form-inline mr-auto">
+            <div class="search-element">
+              <input class="form-control" type="search" placeholder="Search" aria-label="Search" data-width="200">
+              <button class="btn" type="submit">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </form>
+        </li>
+      </ul>
+    </div>
+    <ul class="navbar-nav navbar-right">
+      <li class="dropdown dropdown-list-toggle"><a href="#" data-toggle="dropdown"
+          class="nav-link notification-toggle nav-link-lg"><i data-feather="bell" class="bell"></i>
+        </a>
+        <div class="dropdown-menu dropdown-list dropdown-menu-right pullDown">
+          <div class="dropdown-header">
+            Notifications
+            <div class="float-right">
+              <a href="#">Mark All As Read</a>
+            </div>
+          </div>
+          <div class="dropdown-list-content dropdown-list-icons">
+            <a href="#" class="dropdown-item dropdown-item-unread"> <span
+                class="dropdown-item-icon bg-primary text-white"> <i class="fas fa-code"></i>
+              </span> <span class="dropdown-item-desc"> System update available
+                <span class="time">2 Min Ago</span>
+              </span>
+            </a>
+          </div>
+          <div class="dropdown-footer text-center">
+            <a href="#">View All <i class="fas fa-chevron-right"></i></a>
+          </div>
+        </div>
+      </li>
+      <li class="dropdown"><a href="#" data-toggle="dropdown"
+          class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image" src="{{ url_for('static', filename='img/user.png') }}"
+            class="user-img-radious-style"> <span class="d-sm-none d-lg-inline-block">{{ current_user.get_full_name() }}</span></a>
+        <div class="dropdown-menu dropdown-menu-right pullDown">
+          <div class="dropdown-title">Hello {{ current_user.first_name }}</div>
+          <a href="{{ url_for('main.profile') }}" class="dropdown-item has-icon"> <i class="far fa-user"></i> Profile
+          </a> <a href="#" class="dropdown-item has-icon"> <i class="fas fa-cog"></i>
+            Settings
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="{{ url_for('auth.logout') }}" class="dropdown-item has-icon text-danger"> <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </a>
+        </div>
+      </li>
+    </ul>
+  </nav>
+  
+  <div class="main-sidebar sidebar-style-2">
+    <aside id="sidebar-wrapper">
+      <div class="sidebar-brand">
+        <a href="{{ url_for('main.dashboard') }}"> <img alt="image" src="{{ url_for('static', filename='img/logo.png') }}" class="header-logo" /> <span
+            class="logo-name">App Monitor</span>
+        </a>
+      </div>
+      <ul class="sidebar-menu">
+        <li class="menu-header">Main</li>
+        <li class="dropdown active">
+          <a href="{{ url_for('main.dashboard') }}" class="nav-link"><i data-feather="monitor"></i><span>Dashboard</span></a>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="pie-chart"></i><span>Metrics</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="nav-link" href="#">Performance</a></li>
+            <li><a class="nav-link" href="#">System Health</a></li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="activity"></i><span>Events</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="nav-link" href="#">System Events</a></li>
+            <li><a class="nav-link" href="#">User Activity</a></li>
+          </ul>
+        </li>
+        <li><a class="nav-link" href="{{ url_for('main.profile') }}"><i data-feather="user"></i><span>Profile</span></a></li>
+      </ul>
+    </aside>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="main-content">
+    <section class="section">
+      <div class="row">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
+          <div class="card">
+            <div class="card-statistic-4">
+              <div class="align-items-center justify-content-between">
+                <div class="row">
+                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
+                    <div class="card-content">
+                      <h5 class="font-15">Active Users</h5>
+                      <h2 class="mb-3 font-18">{{ recent_metrics|length if recent_metrics else 0 }}</h2>
+                      <p class="mb-0"><span class="col-green">Active</span> Monitoring</p>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
+                    <div class="banner-img">
+                      <img src="{{ url_for('static', filename='img/banner/1.png') }}" alt="">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
+          <div class="card">
+            <div class="card-statistic-4">
+              <div class="align-items-center justify-content-between">
+                <div class="row">
+                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
+                    <div class="card-content">
+                      <h5 class="font-15">System Events</h5>
+                      <h2 class="mb-3 font-18">{{ recent_events|length if recent_events else 0 }}</h2>
+                      <p class="mb-0"><span class="col-orange">Recent</span> Activity</p>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
+                    <div class="banner-img">
+                      <img src="{{ url_for('static', filename='img/banner/2.png') }}" alt="">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
+          <div class="card">
+            <div class="card-statistic-4">
+              <div class="align-items-center justify-content-between">
+                <div class="row">
+                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
+                    <div class="card-content">
+                      <h5 class="font-15">Uptime</h5>
+                      <h2 class="mb-3 font-18">99.9%</h2>
+                      <p class="mb-0"><span class="col-green">High</span> Availability</p>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
+                    <div class="banner-img">
+                      <img src="{{ url_for('static', filename='img/banner/3.png') }}" alt="">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 col-xs-12">
+          <div class="card">
+            <div class="card-statistic-4">
+              <div class="align-items-center justify-content-between">
+                <div class="row">
+                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
+                    <div class="card-content">
+                      <h5 class="font-15">Response Time</h5>
+                      <h2 class="mb-3 font-18">45ms</h2>
+                      <p class="mb-0"><span class="col-green">Fast</span> Performance</p>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
+                    <div class="banner-img">
+                      <img src="{{ url_for('static', filename='img/banner/4.png') }}" alt="">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-12 col-sm-12 col-lg-8">
+          <div class="card">
+            <div class="card-header">
+              <h4>Recent Metrics</h4>
+            </div>
+            <div class="card-body">
+              {% if recent_metrics %}
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Type</th>
+                        <th>Value</th>
+                        <th>Description</th>
+                        <th>Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for metric in recent_metrics %}
+                      <tr>
+                        <td><span class="badge badge-primary">{{ metric.metric_type }}</span></td>
+                        <td>{{ metric.value }}{% if metric.unit %} {{ metric.unit }}{% endif %}</td>
+                        <td>{{ metric.description or 'No description' }}</td>
+                        <td>{{ metric.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              {% else %}
+                <p class="text-muted text-center">No metrics available yet.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-12 col-lg-4">
+          <div class="card">
+            <div class="card-header">
+              <h4>Recent Events</h4>
+            </div>
+            <div class="card-body">
+              {% if recent_events %}
+                {% for event in recent_events %}
+                <div class="support-ticket media pb-1 mb-3">
+                  <div class="media-body ml-3">
+                    <div class="badge badge-pill badge-{{ 'danger' if event.severity == 'high' else 'warning' if event.severity == 'medium' else 'info' }} mb-1 float-right">{{ event.severity|title }}</div>
+                    <span class="font-weight-bold">{{ event.event_type|title }}</span>
+                    <p class="my-1">{{ event.message }}</p>
+                    <small class="text-muted">{{ event.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                  </div>
+                </div>
+                {% endfor %}
+              {% else %}
+                <p class="text-muted text-center">No events available yet.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

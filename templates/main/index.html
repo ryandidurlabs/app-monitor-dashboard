@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}App Monitor Dashboard - Welcome{% endblock %}
+
+{% block content %}
+<div class="main-wrapper main-wrapper-1">
+  <div class="navbar-bg"></div>
+  <nav class="navbar navbar-expand-lg main-navbar sticky">
+    <div class="form-inline mr-auto">
+      <ul class="navbar-nav mr-3">
+        <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg collapse-btn"> <i data-feather="align-justify"></i></a></li>
+        <li><a href="#" class="nav-link nav-link-lg fullscreen-btn">
+            <i data-feather="maximize"></i>
+          </a></li>
+        <li>
+          <form class="form-inline mr-auto">
+            <div class="search-element">
+              <input class="form-control" type="search" placeholder="Search" aria-label="Search" data-width="200">
+              <button class="btn" type="submit">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </form>
+        </li>
+      </ul>
+    </div>
+    <ul class="navbar-nav navbar-right">
+      <!-- Authentication Links -->
+      <li class="dropdown">
+        <a href="#" data-toggle="dropdown" class="nav-link nav-link-lg nav-link-user">
+          <i data-feather="user" class="mr-2"></i>
+          <span>Account</span>
+        </a>
+        <div class="dropdown-menu dropdown-menu-right pullDown">
+          <a href="{{ url_for('auth.login') }}" class="dropdown-item has-icon">
+            <i class="fas fa-sign-in-alt"></i> Login
+          </a>
+          <a href="{{ url_for('auth.register') }}" class="dropdown-item has-icon">
+            <i class="fas fa-user-plus"></i> Register
+          </a>
+        </div>
+      </li>
+    </ul>
+  </nav>
+  
+  <!-- Main Content -->
+  <div class="main-content">
+    <section class="section">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <h4>Welcome to App Monitor Dashboard</h4>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-8">
+                  <h5>Monitor Your Applications</h5>
+                  <p class="text-muted">
+                    App Monitor Dashboard provides comprehensive monitoring and analytics for your applications. 
+                    Track performance metrics, monitor system events, and get real-time insights into your application health.
+                  </p>
+                  <div class="row mt-4">
+                    <div class="col-md-6">
+                      <h6><i class="fas fa-chart-line text-primary"></i> Performance Metrics</h6>
+                      <p class="text-muted">Monitor CPU, memory, response times, and other key performance indicators.</p>
+                    </div>
+                    <div class="col-md-6">
+                      <h6><i class="fas fa-exclamation-triangle text-warning"></i> System Events</h6>
+                      <p class="text-muted">Track errors, warnings, and system events in real-time.</p>
+                    </div>
+                  </div>
+                  <div class="row mt-3">
+                    <div class="col-md-6">
+                      <h6><i class="fas fa-users text-info"></i> User Management</h6>
+                      <p class="text-muted">Secure user authentication and role-based access control.</p>
+                    </div>
+                    <div class="col-md-6">
+                      <h6><i class="fas fa-cog text-success"></i> Customizable Dashboard</h6>
+                      <p class="text-muted">Personalize your dashboard with custom layouts and preferences.</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4 text-center">
+                  <div class="mt-4">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg btn-block mb-3">
+                      <i class="fas fa-user-plus"></i> Get Started
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg btn-block">
+                      <i class="fas fa-sign-in-alt"></i> Sign In
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

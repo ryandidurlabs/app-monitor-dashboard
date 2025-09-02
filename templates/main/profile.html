@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - App Monitor{% endblock %}
+
+{% block content %}
+<div class="main-wrapper main-wrapper-1">
+  <div class="navbar-bg"></div>
+  <nav class="navbar navbar-expand-lg main-navbar sticky">
+    <div class="form-inline mr-auto">
+      <ul class="navbar-nav mr-3">
+        <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg collapse-btn"> <i data-feather="align-justify"></i></a></li>
+        <li><a href="#" class="nav-link nav-link-lg fullscreen-btn">
+            <i data-feather="maximize"></i>
+          </a></li>
+        <li>
+          <form class="form-inline mr-auto">
+            <div class="search-element">
+              <input class="form-control" type="search" placeholder="Search" aria-label="Search" data-width="200">
+              <button class="btn" type="submit">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </form>
+        </li>
+      </ul>
+    </div>
+    <ul class="navbar-nav navbar-right">
+      <li class="dropdown"><a href="#" data-toggle="dropdown"
+          class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image" src="{{ url_for('static', filename='img/user.png') }}"
+            class="user-img-radious-style"> <span class="d-sm-none d-lg-inline-block">{{ current_user.get_full_name() }}</span></a>
+        <div class="dropdown-menu dropdown-menu-right pullDown">
+          <div class="dropdown-title">Hello {{ current_user.first_name }}</div>
+          <a href="{{ url_for('main.profile') }}" class="dropdown-item has-icon"> <i class="far fa-user"></i> Profile
+          </a> <a href="#" class="dropdown-item has-icon"> <i class="fas fa-cog"></i>
+            Settings
+          </a>
+          <div class="dropdown-divider"></div>
+          <a href="{{ url_for('auth.logout') }}" class="dropdown-item has-icon text-danger"> <i class="fas fa-sign-out-alt"></i>
+            Logout
+          </a>
+        </div>
+      </li>
+    </ul>
+  </nav>
+  
+  <div class="main-sidebar sidebar-style-2">
+    <aside id="sidebar-wrapper">
+      <div class="sidebar-brand">
+        <a href="{{ url_for('main.dashboard') }}"> <img alt="image" src="{{ url_for('static', filename='img/logo.png') }}" class="header-logo" /> <span
+            class="logo-name">App Monitor</span>
+        </a>
+      </div>
+      <ul class="sidebar-menu">
+        <li class="menu-header">Main</li>
+        <li class="dropdown">
+          <a href="{{ url_for('main.dashboard') }}" class="nav-link"><i data-feather="monitor"></i><span>Dashboard</span></a>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="pie-chart"></i><span>Metrics</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="nav-link" href="#">Performance</a></li>
+            <li><a class="nav-link" href="#">System Health</a></li>
+          </ul>
+        </li>
+        <li class="dropdown">
+          <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="activity"></i><span>Events</span></a>
+          <ul class="dropdown-menu">
+            <li><a class="nav-link" href="#">System Events</a></li>
+            <li><a class="nav-link" href="#">User Activity</a></li>
+          </ul>
+        </li>
+        <li class="dropdown active">
+          <a href="{{ url_for('main.profile') }}" class="nav-link"><i data-feather="user"></i><span>Profile</span></a>
+        </li>
+      </ul>
+    </aside>
+  </div>
+  
+  <!-- Main Content -->
+  <div class="main-content">
+    <section class="section">
+      <div class="section-header">
+        <h1>Profile</h1>
+        <div class="section-header-breadcrumb">
+          <div class="breadcrumb-item active"><a href="{{ url_for('main.dashboard') }}">Dashboard</a></div>
+          <div class="breadcrumb-item">Profile</div>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col-12 col-md-12 col-lg-12">
+          <div class="card">
+            <div class="card-header">
+              <h4>Profile Information</h4>
+            </div>
+            <div class="card-body">
+              <form method="POST" action="{{ url_for('main.edit_profile') }}">
+                <div class="row">
+                  <div class="form-group col-md-6">
+                    <label>First Name</label>
+                    <input type="text" class="form-control" name="first_name" value="{{ current_user.first_name }}" required>
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label>Last Name</label>
+                    <input type="text" class="form-control" name="last_name" value="{{ current_user.last_name }}" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" class="form-control" name="email" value="{{ current_user.email }}" required>
+                </div>
+                <div class="form-group">
+                  <label>Username</label>
+                  <input type="text" class="form-control" value="{{ current_user.username }}" readonly>
+                  <small class="form-text text-muted">Username cannot be changed</small>
+                </div>
+                <div class="form-group">
+                  <label>Member Since</label>
+                  <input type="text" class="form-control" value="{{ current_user.created_at.strftime('%B %d, %Y') }}" readonly>
+                </div>
+                <div class="form-group">
+                  <label>Last Login</label>
+                  <input type="text" class="form-control" value="{{ current_user.last_login.strftime('%B %d, %Y at %I:%M %p') if current_user.last_login else 'Never' }}" readonly>
+                </div>
+                <div class="form-group">
+                  <button type="submit" class="btn btn-primary">Update Profile</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {% if preferences %}
+      <div class="row">
+        <div class="col-12 col-md-12 col-lg-12">
+          <div class="card">
+            <div class="card-header">
+              <h4>Dashboard Preferences</h4>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Theme</label>
+                    <select class="form-control" id="theme-select">
+                      <option value="light" {{ 'selected' if preferences.theme == 'light' else '' }}>Light</option>
+                      <option value="dark" {{ 'selected' if preferences.theme == 'dark' else '' }}>Dark</option>
+                      <option value="auto" {{ 'selected' if preferences.theme == 'auto' else '' }}>Auto</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Dashboard Layout</label>
+                    <select class="form-control" id="layout-select">
+                      <option value="default" {{ 'selected' if preferences.dashboard_layout == 'default' else '' }}>Default</option>
+                      <option value="compact" {{ 'selected' if preferences.dashboard_layout == 'compact' else '' }}>Compact</option>
+                      <option value="wide" {{ 'selected' if preferences.dashboard_layout == 'wide' else '' }}>Wide</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <div class="custom-control custom-switch">
+                      <input type="checkbox" class="custom-control-input" id="notifications-switch" {{ 'checked' if preferences.notifications_enabled else '' }}>
+                      <label class="custom-control-label" for="notifications-switch">Enable Notifications</label>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label>Refresh Interval (seconds)</label>
+                    <input type="number" class="form-control" id="refresh-interval" value="{{ preferences.refresh_interval }}" min="10" max="300">
+                  </div>
+                </div>
+              </div>
+              <div class="form-group">
+                <button type="button" class="btn btn-primary" onclick="updatePreferences()">Save Preferences</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updatePreferences() {
+  const theme = document.getElementById('theme-select').value;
+  const layout = document.getElementById('layout-select').value;
+  const notifications = document.getElementById('notifications-switch').checked;
+  const refreshInterval = document.getElementById('refresh-interval').value;
+  
+  fetch('/api/preferences', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      theme: theme,
+      dashboard_layout: layout,
+      notifications_enabled: notifications,
+      refresh_interval: parseInt(refreshInterval)
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Show success message
+      alert('Preferences updated successfully!');
+    } else {
+      alert('Error updating preferences: ' + data.error);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error updating preferences');
+  });
+}
+</script>
+{% endblock %}
