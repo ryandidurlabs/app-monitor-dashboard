@@ -1,70 +1,227 @@
 import os
-from flask import Flask, send_from_directory, abort
+from flask import Flask, send_from_directory, abort, render_template, request, redirect, url_for, flash, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from werkzeug.security import check_password_hash
+from config import config
+from models import db, User, UserSetting, UserPreference, AppMetric, SystemEvent
+from datetime import datetime
 
+# Initialize Flask extensions
+login_manager = LoginManager()
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-TEMPLATE_DIR = os.path.join(BASE_DIR, "template")
+def create_app(config_name=None):
+    """Application factory function."""
+    app = Flask(__name__)
+    
+    # Determine configuration
+    if config_name is None:
+        config_name = os.environ.get('FLASK_ENV', 'production')
+    
+    app.config.from_object(config[config_name])
+    config[config_name].init_app(app)
+    
+    # Initialize extensions
+    db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = 'login'
+    login_manager.login_message = 'Please log in to access this page.'
+    
+    # User loader for Flask-Login
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+    
+    # Register blueprints and routes
+    register_routes(app)
+    
+    return app
 
-# Serve static files directly from the existing `template` directory
-app = Flask(
-    __name__,
-    static_folder="template",
-    static_url_path="",
-    template_folder="template",
-)
+def register_routes(app):
+    """Register all application routes."""
+    
+    @app.get("/health")
+    def health() -> str:
+        return "ok"
+    
+    @app.get("/")
+    def index():
+        """Main dashboard page."""
+        if current_user.is_authenticated:
+            # Get user preferences
+            prefs = current_user.preferences.first()
+            if prefs:
+                theme = prefs.theme
+                layout = prefs.dashboard_layout
+            else:
+                theme = 'light'
+                layout = 'default'
+            
+            # Get recent metrics
+            recent_metrics = AppMetric.query.order_by(AppMetric.timestamp.desc()).limit(5).all()
+            
+            # Get recent system events
+            recent_events = SystemEvent.query.order_by(SystemEvent.timestamp.desc()).limit(5).all()
+            
+            return render_template('dashboard.html', 
+                                user=current_user,
+                                theme=theme,
+                                layout=layout,
+                                metrics=recent_metrics,
+                                events=recent_events)
+        else:
+            return send_from_directory("template", "index.html")
+    
+    @app.route("/login", methods=['GET', 'POST'])
+    def login():
+        """User login page."""
+        if current_user.is_authenticated:
+            return redirect(url_for('index'))
+        
+        if request.method == 'POST':
+            username = request.form.get('username')
+            password = request.form.get('password')
+            
+            user = User.query.filter_by(username=username).first()
+            
+            if user and user.check_password(password) and user.is_active:
+                login_user(user, remember=True)
+                user.last_login = datetime.utcnow()
+                db.session.commit()
+                
+                next_page = request.args.get('next')
+                if not next_page or not next_page.startswith('/'):
+                    next_page = url_for('index')
+                return redirect(next_page)
+            else:
+                flash('Invalid username or password', 'error')
+        
+        return send_from_directory("template", "auth-login.html")
+    
+    @app.route("/logout")
+    @login_required
+    def logout():
+        """User logout."""
+        logout_user()
+        flash('You have been logged out.', 'info')
+        return redirect(url_for('index'))
+    
+    @app.route("/profile")
+    @login_required
+    def profile():
+        """User profile page."""
+        prefs = current_user.preferences.first()
+        settings = current_user.settings.all()
+        return render_template('profile.html', 
+                            user=current_user,
+                            preferences=prefs,
+                            settings=settings)
+    
+    @app.route("/api/metrics")
+    @login_required
+    def api_metrics():
+        """API endpoint for application metrics."""
+        metrics = AppMetric.query.order_by(AppMetric.timestamp.desc()).limit(100).all()
+        return jsonify([{
+            'id': m.id,
+            'name': m.metric_name,
+            'value': m.metric_value,
+            'unit': m.metric_unit,
+            'type': m.metric_type,
+            'tags': m.tags,
+            'timestamp': m.timestamp.isoformat()
+        } for m in metrics])
+    
+    @app.route("/api/events")
+    @login_required
+    def api_events():
+        """API endpoint for system events."""
+        events = SystemEvent.query.order_by(SystemEvent.timestamp.desc()).limit(100).all()
+        return jsonify([{
+            'id': e.id,
+            'type': e.event_type,
+            'level': e.event_level,
+            'message': e.event_message,
+            'data': e.event_data,
+            'source': e.source,
+            'timestamp': e.timestamp.isoformat()
+        } for e in events])
+    
+    @app.route("/api/preferences", methods=['GET', 'POST'])
+    @login_required
+    def api_preferences():
+        """API endpoint for user preferences."""
+        if request.method == 'POST':
+            data = request.get_json()
+            
+            prefs = current_user.preferences.first()
+            if not prefs:
+                prefs = UserPreference(user_id=current_user.id)
+                db.session.add(prefs)
+            
+            # Update preferences
+            for key, value in data.items():
+                if hasattr(prefs, key):
+                    setattr(prefs, key, value)
+            
+            db.session.commit()
+            return jsonify({'status': 'success'})
+        
+        # GET request
+        prefs = current_user.preferences.first()
+        if prefs:
+            return jsonify({
+                'theme': prefs.theme,
+                'dashboard_layout': prefs.dashboard_layout,
+                'sidebar_collapsed': prefs.sidebar_collapsed,
+                'notifications_enabled': prefs.notifications_enabled,
+                'language': prefs.language,
+                'timezone': prefs.timezone
+            })
+        else:
+            return jsonify({})
+    
+    @app.get("/<string:page>")
+    @app.get("/<string:page>.html")
+    def page_router(page: str):
+        """Route for other HTML pages."""
+        # Only allow single-segment pages, to avoid catching static assets
+        filename = f"{page}.html"
+        file_path = os.path.join("template", filename)
+        if os.path.isfile(file_path):
+            return send_from_directory("template", filename)
+        abort(404)
+    
+    @app.get("/pages")
+    def list_pages():
+        """Simple sitemap of available top-level pages."""
+        try:
+            entries = []
+            for name in sorted(os.listdir("template")):
+                if not name.lower().endswith(".html"):
+                    continue
+                if name.startswith("errors-"):
+                    continue
+                entries.append(name)
+            if not entries:
+                return "No pages found", 200
+            links = "".join(
+                f"<li><a href='/{n[:-5]}'>{n}</a></li>" for n in entries
+            )
+            return f"<h1>Pages</h1><ul>{links}</ul>", 200
+        except Exception:
+            abort(500)
+    
+    @app.errorhandler(404)
+    def not_found(_):
+        """Try to serve themed 404 page if available."""
+        custom_404 = os.path.join("template", "errors-404.html")
+        if os.path.isfile(custom_404):
+            return send_from_directory("template", "errors-404.html"), 404
+        return "Not Found", 404
 
-
-@app.get("/health")
-def health() -> str:
-    return "ok"
-
-
-@app.get("/")
-def index():
-    # Serve the main dashboard page
-    return send_from_directory(TEMPLATE_DIR, "index.html")
-
-
-@app.get("/<string:page>")
-@app.get("/<string:page>.html")
-def page_router(page: str):
-    # Only allow single-segment pages, to avoid catching static assets
-    filename = f"{page}.html"
-    file_path = os.path.join(TEMPLATE_DIR, filename)
-    if os.path.isfile(file_path):
-        return send_from_directory(TEMPLATE_DIR, filename)
-    abort(404)
-
-
-@app.get("/pages")
-def list_pages():
-    # Simple sitemap of available top-level pages
-    try:
-        entries = []
-        for name in sorted(os.listdir(TEMPLATE_DIR)):
-            if not name.lower().endswith(".html"):
-                continue
-            if name.startswith("errors-"):
-                continue
-            entries.append(name)
-        if not entries:
-            return "No pages found", 200
-        links = "".join(
-            f"<li><a href='/{n[:-5]}'>{n}</a></li>" for n in entries
-        )
-        return f"<h1>Pages</h1><ul>{links}</ul>", 200
-    except Exception:
-        abort(500)
-
-
-@app.errorhandler(404)
-def not_found(_):
-    # Try to serve themed 404 page if available
-    custom_404 = os.path.join(TEMPLATE_DIR, "errors-404.html")
-    if os.path.isfile(custom_404):
-        return send_from_directory(TEMPLATE_DIR, "errors-404.html"), 404
-    return "Not Found", 404
-
+# Create the app instance
+app = create_app()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
