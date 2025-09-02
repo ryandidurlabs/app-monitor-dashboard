@@ -12,7 +12,7 @@ login_manager = LoginManager()
 
 def create_app(config_name=None):
     """Application factory function."""
-    app = Flask(__name__)
+    app = Flask(__name__, template_folder='template')
     
     # Determine configuration
     if config_name is None:
