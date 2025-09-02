@@ -20,12 +20,11 @@ class ProductionConfig(Config):
     """Production configuration."""
     DEBUG = False
     
-    def __init__(self):
-        # Handle Heroku's DATABASE_URL format immediately
-        database_url = os.environ.get('DATABASE_URL')
-        if database_url and database_url.startswith('postgres://'):
-            database_url = database_url.replace('postgres://', 'postgresql://', 1)
-        self.SQLALCHEMY_DATABASE_URI = database_url
+    # Handle Heroku's DATABASE_URL format immediately at class definition
+    _database_url = os.environ.get('DATABASE_URL')
+    if _database_url and _database_url.startswith('postgres://'):
+        _database_url = _database_url.replace('postgres://', 'postgresql://', 1)
+    SQLALCHEMY_DATABASE_URI = _database_url
     
     @classmethod
     def init_app(cls, app):
