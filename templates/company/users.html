@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}Company Users - {{ company.name }}{% endblock %}
+
+{% block page_title %}Company Users{% endblock %}
+
+{% block extra_css %}
+<style>
+    .user-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .user-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        font-weight: bold;
+        margin-right: 20px;
+    }
+    
+    .user-role {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .role-admin { background: #dc3545; color: white; }
+    .role-manager { background: #fd7e14; color: white; }
+    .role-user { background: #28a745; color: white; }
+    
+    .user-status {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    
+    .status-active { background: #28a745; }
+    .status-inactive { background: #6c757d; }
+    
+    .add-user-form {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 30px;
+    }
+    
+    .form-section {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Company Info Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="user-avatar">
+                            {{ company.name[0] }}
+                        </div>
+                        <div>
+                            <h4 class="mb-1">{{ company.name }}</h4>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-globe mr-2"></i>{{ company.domain }}
+                                {% if company.is_active %}
+                                    <span class="badge badge-success ml-2">Active</span>
+                                {% else %}
+                                    <span class="badge badge-secondary ml-2">Inactive</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New User Form -->
+    <div class="row">
+        <div class="col-12">
+            <div class="add-user-form">
+                <h5><i class="fas fa-user-plus"></i> Add New User</h5>
+                <form id="addUserForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="firstName">First Name *</label>
+                                <input type="text" class="form-control" id="firstName" name="firstName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="lastName">Last Name *</label>
+                                <input type="text" class="form-control" id="lastName" name="lastName" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email">Email *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                                <small class="form-text text-muted">Must be a valid email address</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="username">Username *</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                                <small class="form-text text-muted">Must be unique</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="password">Password *</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <small class="form-text text-muted">Minimum 8 characters</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="role">Role</label>
+                                <select class="form-control" id="role" name="role">
+                                    <option value="user">User</option>
+                                    <option value="manager">Manager</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="isAdmin">Admin Access</label>
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="isAdmin" name="isAdmin">
+                                    <label class="custom-control-label" for="isAdmin">Grant admin privileges</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add User
+                            </button>
+                            <button type="reset" class="btn btn-secondary ml-2">
+                                <i class="fas fa-undo"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-users"></i> Company Users ({{ users|length }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if users %}
+                        <div class="row">
+                            {% for user in users %}
+                            <div class="col-lg-6 col-xl-4">
+                                <div class="user-card">
+                                    <div class="d-flex align-items-start">
+                                        <div class="user-avatar">
+                                            {{ user.first_name[0] }}{{ user.last_name[0] }}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="mb-1">{{ user.get_full_name() }}</h6>
+                                                <span class="user-role role-{{ user.role }}">
+                                                    {{ user.role }}
+                                                </span>
+                                            </div>
+                                            <p class="text-muted mb-2">
+                                                <i class="fas fa-envelope mr-2"></i>{{ user.email }}
+                                            </p>
+                                            <p class="text-muted mb-2">
+                                                <i class="fas fa-user mr-2"></i>{{ user.username }}
+                                            </p>
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="d-flex align-items-center">
+                                                    <span class="user-status status-{{ 'active' if user.is_active else 'inactive' }}"></span>
+                                                    <small class="text-muted">
+                                                        {{ 'Active' if user.is_active else 'Inactive' }}
+                                                    </small>
+                                                </span>
+                                                {% if user.is_admin %}
+                                                    <span class="badge badge-danger">Admin</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-users fa-3x mb-3"></i>
+                            <h5>No Users Found</h5>
+                            <p>Start by adding the first user to your company.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('addUserForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const userData = {
+        first_name: formData.get('firstName'),
+        last_name: formData.get('lastName'),
+        email: formData.get('email'),
+        username: formData.get('username'),
+        password: formData.get('password'),
+        role: formData.get('role'),
+        is_admin: formData.get('isAdmin') === 'on'
+    };
+    
+    try {
+        const response = await fetch('{{ url_for("company.add_user") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(userData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Show success message
+            showAlert('User added successfully!', 'success');
+            
+            // Reset form
+            this.reset();
+            
+            // Reload page to show new user
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showAlert(result.error || 'Failed to add user', 'danger');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('An error occurred while adding the user', 'danger');
+    }
+});
+
+function showAlert(message, type) {
+    // Create alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    `;
+    
+    // Insert at the top of the content
+    const content = document.querySelector('.main-content');
+    content.insertBefore(alertDiv, content.firstChild);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+
+// Auto-generate username from first and last name
+document.getElementById('firstName').addEventListener('input', generateUsername);
+document.getElementById('lastName').addEventListener('input', generateUsername);
+
+function generateUsername() {
+    const firstName = document.getElementById('firstName').value.toLowerCase().replace(/[^a-z]/g, '');
+    const lastName = document.getElementById('lastName').value.toLowerCase().replace(/[^a-z]/g, '');
+    
+    if (firstName && lastName) {
+        const username = `${firstName}.${lastName}`;
+        document.getElementById('username').value = username;
+    }
+}
+</script>
+{% endblock %}

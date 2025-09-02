@@ -3,7 +3,7 @@ API Blueprint
 Handles API endpoints for metrics, events, and preferences
 """
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, render_template
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
 
@@ -17,21 +17,26 @@ api_bp = Blueprint('api', __name__)
 def metrics():
     """Handle metrics API endpoints."""
     if request.method == 'GET':
-        # Get metrics for the current user
-        metrics = AppMetric.query.filter_by(user_id=current_user.id)\
-            .order_by(AppMetric.timestamp.desc())\
-            .limit(100).all()
-        
-        return jsonify({
-            'success': True,
-            'data': [{
-                'id': m.id,
-                'metric_type': m.metric_type,
-                'value': m.value,
-                'timestamp': m.timestamp.isoformat(),
-                'description': m.description
-            } for m in metrics]
-        })
+        # Check if this is an API request (JSON) or web page request
+        if request.headers.get('Accept') == 'application/json' or request.args.get('format') == 'json':
+            # API request - return JSON
+            metrics = AppMetric.query.filter_by(user_id=current_user.id)\
+                .order_by(AppMetric.timestamp.desc())\
+                .limit(100).all()
+            
+            return jsonify({
+                'success': True,
+                'data': [{
+                    'id': m.id,
+                    'metric_type': m.metric_type,
+                    'value': m.value,
+                    'timestamp': m.timestamp.isoformat(),
+                    'description': m.description
+                } for m in metrics]
+            })
+        else:
+            # Web page request - render template
+            return render_template('api/metrics.html')
     
     elif request.method == 'POST':
         # Create new metric
