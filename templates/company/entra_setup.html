@@ -100,25 +100,33 @@
                     <div class="row mb-4">
                         <div class="col-md-3">
                             <div class="text-center">
-                                <div class="status-badge status-active">✓ Company Setup</div>
+                                <div class="status-badge {% if setup_status.company_setup %}status-active{% else %}status-pending{% endif %}">
+                                    {% if setup_status.company_setup %}✓{% else %}⏳{% endif %} Company Setup
+                                </div>
                                 <p class="mt-2">Company profile created</p>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center">
-                                <div class="status-badge status-pending">⏳ Entra ID Config</div>
+                                <div class="status-badge {% if setup_status.entra_config %}status-active{% else %}status-pending{% endif %}">
+                                    {% if setup_status.entra_config %}✓{% else %}⏳{% endif %} Entra ID Config
+                                </div>
                                 <p class="mt-2">Configure application</p>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center">
-                                <div class="status-badge status-pending">⏳ Permissions</div>
+                                <div class="status-badge {% if setup_status.permissions %}status-active{% else %}status-pending{% endif %}">
+                                    {% if setup_status.permissions %}✓{% else %}⏳{% endif %} Permissions
+                                </div>
                                 <p class="mt-2">Grant API permissions</p>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="text-center">
-                                <div class="status-badge status-pending">⏳ Sync Data</div>
+                                <div class="status-badge {% if setup_status.sync_data %}status-active{% else %}status-pending{% endif %}">
+                                    {% if setup_status.sync_data %}✓{% else %}⏳{% endif %} Sync Data
+                                </div>
                                 <p class="mt-2">Discover applications</p>
                             </div>
                         </div>
@@ -251,6 +259,28 @@
                         </div>
                     </div>
 
+                    <!-- Step 4: Test Connection -->
+                    <div class="setup-step">
+                        <h4><i class="fas fa-4"></i> Test Connection</h4>
+                        <p>Test the connection to ensure your Entra ID configuration is working correctly.</p>
+                        
+                        <button class="test-connection-btn" onclick="testConnection()" id="test-connection-btn">
+                            <i class="fas fa-plug"></i> Test Connection
+                        </button>
+                        
+                        <div id="connection-result" class="mt-2"></div>
+                        
+                        <div class="alert alert-info">
+                            <strong>What this test does:</strong>
+                            <ul>
+                                <li>Verifies your tenant ID, client ID, and client secret</li>
+                                <li>Tests the API connection to Microsoft Graph</li>
+                                <li>Checks if required permissions are granted</li>
+                                <li>Confirms the integration is ready for use</li>
+                            </ul>
+                        </div>
+                    </div>
+
                     <!-- Step 5: Sync Applications -->
                     <div class="setup-step">
                         <h4><i class="fas fa-5"></i> Sync Applications</h4>
@@ -298,26 +328,42 @@
 {% block extra_js %}
 <script>
 function testConnection() {
-    const btn = document.querySelector('.test-connection-btn');
+    const btn = document.getElementById('test-connection-btn');
     const resultDiv = document.getElementById('connection-result');
     
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Testing...';
     
-    // Simulate connection test (replace with actual API call)
-    setTimeout(() => {
-        const success = Math.random() > 0.3; // 70% success rate for demo
-        
-        if (success) {
-            resultDiv.innerHTML = '<div class="alert alert-success"><i class="fas fa-check"></i> Connection successful! Entra ID integration is working.</div>';
-            document.getElementById('sync-btn').disabled = false;
-        } else {
-            resultDiv.innerHTML = '<div class="alert alert-danger"><i class="fas fa-times"></i> Connection failed. Please check your configuration.</div>';
+    fetch('{{ url_for("company.test_entra_connection") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
         }
-        
-        btn.disabled = false;
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            resultDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check"></i> ${data.message}</div>`;
+            document.getElementById('sync-btn').disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Connection Verified';
+            btn.disabled = true;
+            btn.className = 'test-connection-btn btn btn-success';
+            
+            // Update status badge
+            const statusBadge = document.querySelector('.status-badge:nth-child(2)');
+            statusBadge.className = 'status-badge status-active';
+            statusBadge.innerHTML = '✓ Entra ID Config';
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times"></i> ${data.error}</div>`;
+            btn.innerHTML = '<i class="fas fa-plug"></i> Test Connection';
+            btn.disabled = false;
+        }
+    })
+    .catch(error => {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times"></i> Connection test failed: ${error.message}</div>`;
         btn.innerHTML = '<i class="fas fa-plug"></i> Test Connection';
-    }, 2000);
+        btn.disabled = false;
+    });
 }
 
 function syncApplications() {
@@ -327,25 +373,34 @@ function syncApplications() {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
     
-    // Simulate sync process (replace with actual API call)
-    setTimeout(() => {
-        const appCount = Math.floor(Math.random() * 20) + 5; // 5-25 apps
-        
-        resultDiv.innerHTML = `
-            <div class="alert alert-success">
-                <i class="fas fa-check"></i> Sync completed successfully! 
-                Discovered ${appCount} applications from Entra ID.
-            </div>
-        `;
-        
-        btn.innerHTML = '<i class="fas fa-sync"></i> Sync Again';
+    fetch('{{ url_for("company.sync_entra") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            resultDiv.innerHTML = `<div class="alert alert-success"><i class="fas fa-check"></i> ${data.message}</div>`;
+            btn.innerHTML = '<i class="fas fa-sync"></i> Sync Again';
+            btn.disabled = false;
+            
+            // Update status badge
+            const statusBadge = document.querySelector('.status-badge:nth-child(4)');
+            statusBadge.className = 'status-badge status-active';
+            statusBadge.innerHTML = '✓ Sync Data';
+        } else {
+            resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times"></i> ${data.error}</div>`;
+            btn.innerHTML = '<i class="fas fa-sync"></i> Sync Applications';
+            btn.disabled = false;
+        }
+    })
+    .catch(error => {
+        resultDiv.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times"></i> Sync failed: ${error.message}</div>`;
+        btn.innerHTML = '<i class="fas fa-sync"></i> Sync Applications';
         btn.disabled = false;
-        
-        // Update status badge
-        const statusBadge = document.querySelector('.status-badge:nth-child(3)');
-        statusBadge.className = 'status-badge status-active';
-        statusBadge.innerHTML = '✓ Sync Complete';
-    }, 3000);
+    });
 }
 </script>
 {% endblock %}

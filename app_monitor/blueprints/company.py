@@ -77,7 +77,32 @@ def entra_setup():
         return redirect(url_for('company.company_setup'))
     
     company = Company.query.get(current_user.company_id)
-    return render_template('company/entra_setup.html', company=company)
+    
+    # Check actual configuration status
+    sso_config = SSOConfiguration.query.filter_by(
+        company_id=company.id, 
+        provider_name='entra_id'
+    ).first()
+    
+    entra_integration = None
+    if sso_config:
+        entra_integration = EntraIntegration.query.filter_by(
+            sso_config_id=sso_config.id
+        ).first()
+    
+    # Determine setup status
+    setup_status = {
+        'company_setup': True,  # Company exists
+        'entra_config': bool(sso_config and entra_integration and entra_integration.tenant_id),
+        'permissions': bool(entra_integration and entra_integration.permissions_granted),
+        'sync_data': bool(entra_integration and entra_integration.sync_status == 'active')
+    }
+    
+    return render_template('company/entra_setup.html', 
+                         company=company,
+                         setup_status=setup_status,
+                         sso_config=sso_config,
+                         entra_integration=entra_integration)
 
 @company_bp.route('/company/dashboard')
 @login_required
@@ -179,6 +204,52 @@ def sync_entra():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@company_bp.route('/company/test-connection', methods=['POST'])
+@login_required
+def test_entra_connection():
+    """Test the Entra ID connection."""
+    if not current_user.company_id:
+        return jsonify({'error': 'Company not set up'}), 400
+    
+    if not current_user.can_manage_company(current_user.company_id):
+        return jsonify({'error': 'Insufficient permissions'}), 403
+    
+    try:
+        company = Company.query.get(current_user.company_id)
+        sso_config = SSOConfiguration.query.filter_by(
+            company_id=company.id, 
+            provider_name='entra_id'
+        ).first()
+        
+        if not sso_config:
+            return jsonify({'error': 'Entra ID not configured'}), 400
+        
+        entra_integration = EntraIntegration.query.filter_by(
+            sso_config_id=sso_config.id
+        ).first()
+        
+        if not entra_integration:
+            return jsonify({'error': 'Entra integration not found'}), 400
+        
+        # Test connection by trying to get applications
+        entra_client = EntraClient(
+            tenant_id=entra_integration.tenant_id,
+            client_id=entra_integration.client_id,
+            client_secret=entra_integration.client_secret
+        )
+        
+        # Try to get applications to test connection
+        apps = entra_client.get_applications()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Connection successful! Found {len(apps)} applications.',
+            'app_count': len(apps)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': f'Connection failed: {str(e)}'}), 500
 
 @company_bp.route('/company/users')
 @login_required
