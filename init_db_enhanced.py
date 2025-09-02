@@ -205,12 +205,13 @@ def init_database():
         
         for user in users:
             for _ in range(random.randint(5, 15)):
+                chosen_metric_type = random.choice(metric_types)
                 metric = AppMetric(
                     user_id=user.id,
-                    metric_type=random.choice(metric_types),
+                    metric_type=chosen_metric_type,
                     value=random.uniform(10, 95),
-                    unit=units[metric_types.index(metric_type)],
-                    description=f"Sample {metric_type} for {user.username}",
+                    unit=units[metric_types.index(chosen_metric_type)],
+                    description=f"Sample {chosen_metric_type} for {user.username}",
                     timestamp=datetime.utcnow() - timedelta(hours=random.randint(1, 168))
                 )
                 db.session.add(metric)
