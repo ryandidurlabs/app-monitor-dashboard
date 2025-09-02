@@ -86,7 +86,7 @@ class SystemEvent(db.Model):
     message = db.Column(db.Text, nullable=False)
     source = db.Column(db.String(100), default='system')
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-    metadata = db.Column(db.JSON)  # Additional event data
+    event_data = db.Column(db.JSON)  # Additional event data
     
     def __repr__(self):
         return f'<SystemEvent {self.event_type}:{self.severity}>'
