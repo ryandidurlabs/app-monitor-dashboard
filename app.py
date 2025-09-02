@@ -100,7 +100,7 @@ def register_routes(app):
             else:
                 flash('Invalid email/username or password', 'error')
         
-        return send_from_directory("template", "auth-login.html")
+        return render_template("auth-login.html")
     
     @app.route("/register", methods=['GET', 'POST'])
     def register():
@@ -168,7 +168,7 @@ def register_routes(app):
                 flash('Registration successful! Please log in.', 'success')
                 return redirect(url_for('login'))
         
-        return send_from_directory("template", "auth-register.html")
+        return render_template("auth-register.html")
     
     @app.route("/forgot-password", methods=['GET', 'POST'])
     def forgot_password():
@@ -192,7 +192,7 @@ def register_routes(app):
                 
                 return redirect(url_for('login'))
         
-        return send_from_directory("template", "auth-forgot-password.html")
+        return render_template("auth-forgot-password.html")
     
     @app.route("/logout")
     @login_required
