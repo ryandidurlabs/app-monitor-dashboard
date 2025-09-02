@@ -10,7 +10,7 @@ from datetime import datetime
 import re
 
 from .. import db
-from ..models import User
+from ..models import User, Company
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -82,12 +82,28 @@ def register():
                 username = f"{base_username}{counter}"
                 counter += 1
             
-            # Create user
+            # Find or create company based on email domain
+            email_domain = email.split('@')[1].lower()
+            company = Company.query.filter_by(domain=email_domain).first()
+            
+            if not company:
+                # Create new company for this domain
+                company_name = email_domain.split('.')[0].title() + " " + email_domain.split('.')[1].title()
+                company = Company(
+                    name=company_name,
+                    domain=email_domain,
+                    is_active=True
+                )
+                db.session.add(company)
+                db.session.flush()  # Get the company ID
+            
+            # Create user with company_id
             user = User(
                 username=username,
                 email=email,
                 first_name=first_name,
                 last_name=last_name,
+                company_id=company.id,
                 is_active=True
             )
             user.set_password(password)
