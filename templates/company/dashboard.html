@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}Company Dashboard - {{ company.name }}{% endblock %}
+
+{% block page_title %}Company Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .company-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .company-stats {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 10px;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .app-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .app-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .app-status {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    
+    .status-active { background: #28a745; }
+    .status-inactive { background: #6c757d; }
+    
+    .activity-item {
+        border-left: 4px solid #dee2e6;
+        padding: 15px;
+        margin-bottom: 15px;
+        background: #f8f9fa;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .activity-item.activity-login { border-left-color: #28a745; }
+    .activity-item.activity-logout { border-left-color: #6c757d; }
+    .activity-item.activity-sync { border-left-color: #17a2b8; }
+    .activity-item.activity-config { border-left-color: #ffc107; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Company Header -->
+    <div class="company-header">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h2 class="mb-2">{{ company.name }}</h2>
+                <p class="mb-0">
+                    <i class="fas fa-globe mr-2"></i>{{ company.domain }}
+                    {% if company.industry %}
+                        <span class="ml-3"><i class="fas fa-industry mr-2"></i>{{ company.industry }}</span>
+                    {% endif %}
+                    {% if company.employee_count %}
+                        <span class="ml-3"><i class="fas fa-users mr-2"></i>{{ company.employee_count }} employees</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-4 text-right">
+                {% if company.is_active %}
+                    <span class="badge badge-success badge-lg">Active Company</span>
+                {% else %}
+                    <span class="badge badge-secondary badge-lg">Inactive</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Company Statistics -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="company-stats">
+                <div class="stat-number">{{ sso_apps|length }}</div>
+                <div class="stat-label">SSO Applications</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="company-stats">
+                <div class="stat-number">{{ recent_activities|length }}</div>
+                <div class="stat-label">Recent Activities</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="company-stats">
+                <div class="stat-number">{% if company.employee_count %}{{ company.employee_count }}{% else %}--{% endif %}</div>
+                <div class="stat-label">Employees</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="company-stats">
+                <div class="stat-number">99.9%</div>
+                <div class="stat-label">Uptime</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SSO Applications -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-shield-alt"></i> SSO Applications</h5>
+                </div>
+                <div class="card-body">
+                    {% if sso_apps %}
+                        <div class="row">
+                            {% for app in sso_apps %}
+                            <div class="col-md-6">
+                                <div class="app-card">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="mb-1">{{ app.name }}</h6>
+                                        <span class="d-flex align-items-center">
+                                            <span class="app-status status-{{ 'active' if app.is_active else 'inactive' }}"></span>
+                                            <small class="text-muted">
+                                                {{ 'Active' if app.is_active else 'Inactive' }}
+                                            </small>
+                                        </span>
+                                    </div>
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-tag mr-2"></i>{{ app.app_type|title }}
+                                    </p>
+                                    {% if app.entra_app_id %}
+                                        <p class="text-muted mb-0">
+                                            <i class="fas fa-link mr-2"></i>Entra ID: {{ app.entra_app_id[:8] }}...
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-shield-alt fa-3x mb-3"></i>
+                            <h5>No SSO Applications</h5>
+                            <p>Configure your Entra ID integration to discover applications.</p>
+                            <a href="{{ url_for('company.entra_setup') }}" class="btn btn-primary">
+                                <i class="fas fa-cog"></i> Setup Entra ID
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-history"></i> Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities %}
+                        {% for activity in recent_activities %}
+                        <div class="activity-item activity-{{ activity.activity_type }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h6 class="mb-1">{{ activity.description }}</h6>
+                                    <small class="text-muted">{{ activity.user.get_full_name() if activity.user else 'System' }}</small>
+                                </div>
+                                <span class="badge badge-{{ 'success' if activity.activity_type == 'login' else 'info' if activity.activity_type == 'sync' else 'warning' if activity.activity_type == 'config' else 'secondary' }}">
+                                    {{ activity.activity_type|title }}
+                                </span>
+                            </div>
+                            <small class="text-muted">{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-history fa-2x mb-3"></i>
+                            <p>No recent activity</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{{ url_for('company.entra_setup') }}" class="btn btn-primary btn-block">
+                                <i class="fas fa-cog"></i> Configure Entra ID
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('company.users') }}" class="btn btn-success btn-block">
+                                <i class="fas fa-users"></i> Manage Users
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{{ url_for('api.metrics') }}" class="btn btn-info btn-block">
+                                <i class="fas fa-chart-line"></i> View Metrics
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-warning btn-block" onclick="syncApplications()">
+                                <i class="fas fa-sync"></i> Sync Applications
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function syncApplications() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+    
+    fetch('{{ url_for("company.sync_entra") }}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert(data.message, 'success');
+            // Reload page after successful sync
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            showAlert(data.error || 'Sync failed', 'danger');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('An error occurred during sync', 'danger');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+}
+
+function showAlert(message, type) {
+    // Create alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    `;
+    
+    // Insert at the top of the content
+    const content = document.querySelector('.main-content');
+    content.insertBefore(alertDiv, content.firstChild);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}
