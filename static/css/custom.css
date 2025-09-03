@@ -48,12 +48,16 @@
     z-index: 998;
 }
 
-/* Fix sidebar-gone-hide behavior */
-.sidebar-gone-hide {
+/* Fix double logo issue by properly hiding navbar logo when sidebar is visible */
+.navbar-brand.sidebar-gone-hide {
+    display: none !important;
+}
+
+/* When sidebar is hidden, show navbar logo and adjust layout */
+.main-wrapper.sidebar-gone .navbar-brand.sidebar-gone-hide {
     display: block !important;
 }
 
-/* When sidebar is hidden, adjust navbar and content */
 .main-wrapper.sidebar-gone .main-sidebar {
     transform: translateX(-100%);
 }
