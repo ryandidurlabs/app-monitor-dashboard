@@ -24,7 +24,7 @@
       {% if current_user.is_authenticated %}
       <div class="navbar-bg"></div>
       <nav class="navbar navbar-expand-lg main-navbar">
-        <a href="{{ url_for('main.dashboard') }}" class="navbar-brand">
+        <a href="{{ url_for('main.dashboard') }}" class="navbar-brand sidebar-gone-hide">
           <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="App Monitor" height="40" class="d-inline-block align-top">
         </a>
         <a href="#" class="nav-link sidebar-gone-show" data-toggle="sidebar">
