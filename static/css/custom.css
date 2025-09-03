@@ -2,3 +2,102 @@
 /*# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY3VzdG9tLmNzcyIsInNvdXJjZXMiOlsiY3VzdG9tLnNjc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IiJ9 */
 
 /*# sourceMappingURL=custom.css.map */
+
+/* Fix sidebar and layout issues */
+.main-wrapper {
+    min-height: 100vh;
+}
+
+.main-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1000;
+    width: 260px;
+    background: #fff;
+    border-right: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.main-content {
+    margin-left: 260px;
+    padding: 20px;
+    min-height: calc(100vh - 60px);
+    background: #f4f6f9;
+}
+
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 260px;
+    right: 0;
+    z-index: 999;
+    background: #fff;
+    border-bottom: 1px solid #e9ecef;
+    height: 60px;
+}
+
+.navbar-bg {
+    position: fixed;
+    top: 0;
+    left: 260px;
+    right: 0;
+    height: 60px;
+    background: #fff;
+    z-index: 998;
+}
+
+/* Fix logo sizing and positioning */
+.navbar-brand img {
+    max-height: 40px;
+    width: auto;
+}
+
+.sidebar-brand img {
+    max-height: 35px;
+    width: auto;
+}
+
+.sidebar-brand-sm img {
+    max-height: 30px;
+    width: auto;
+}
+
+/* Ensure proper spacing */
+.section {
+    padding: 20px 0;
+}
+
+.section-header {
+    margin-bottom: 30px;
+}
+
+/* Fix card layouts */
+.card {
+    margin-bottom: 20px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+/* Responsive fixes */
+@media (max-width: 768px) {
+    .main-sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .navbar {
+        left: 0;
+    }
+    
+    .navbar-bg {
+        left: 0;
+    }
+}
